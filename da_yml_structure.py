@@ -15,7 +15,8 @@ from mako.exceptions import SyntaxException, CompileException
 # * is "gathered" a valid attr?
 # * handle "response"
 # * labels above fields?
-# * what's up with jinjayaml.yml
+# * if "# use jinja" at top, process whole file with Jinja:
+#   https://docassemble.org/docs/interviews.html#jinja2
 
 
 class YAMLStr:
@@ -87,6 +88,8 @@ class ObjectsAttrType:
 # mandatory can only be used on:
 # question, code, objects, attachment, data, data from code
 
+# TODO(brycew): composable validators! One validator that works with just lists of single entry dicts with a str as the key, and a DAPythonVar as the value, and another that expects a code block, then an OR validator that takes both and works with either.
+# Works with smaller blocks, prevents a lot of duplicate nested code
 big_dict = {
   "question": {
     "type": MakoMarkdownText,
@@ -140,8 +143,12 @@ big_dict = {
   "sections": {},
   "language": {},
   "interview help": {},
-  "def": {},
-  "mako": {},
+  "def": {
+    "type": DAPythonVar,
+  },
+  "mako": {
+    "type": MakoText,
+  },
   "usedefs": {},
   "default role": {}, # use with code
   "default language": {},
@@ -153,7 +160,9 @@ big_dict = {
   "initial": {},
   "event": {},
   "comment": {},
-  "generic object": {},
+  "generic object": {
+    "type": DAPythonVar
+  },
   "variable name": {},
   "data from code": {},
   "back button label": {},
@@ -161,7 +170,18 @@ big_dict = {
     "type": YAMLStr,
   },
   "decoration": {},
-  "yesno": {},
+  "yesno": {
+    "type": DAPythonVar
+  },
+  "noyes": {
+    "type": DAPythonVar
+  },
+  "yesnomaybe": {
+    "type": DAPythonVar
+  },
+  "noyesmaybe": {
+    "type": DAPythonVar
+  },
   "reset": {},
   "on change": {},
   "image sets": {},
@@ -170,6 +190,7 @@ big_dict = {
   "continue button field": {
     "type": DAPythonVar,
   },
+  "order": {},
 }
 
 # need a list of blocks; certain attributes imply certain blocks, and block out other things,
@@ -217,6 +238,12 @@ types_of_blocks = {
       "imports",
     ],
   },
+  "order": {
+    "exclusive": True,
+    "allowed_attrs": [
+      "order"
+    ],
+  },
   "attachment": {
     "exclusive": True,
     "partners": ["question"],
@@ -236,6 +263,7 @@ types_of_blocks = {
       "content file",
       "reconsider",
     ],
+    "partners": ["terms"],
   },
   "table": {}, # maybe?
   "translations": {},
@@ -247,7 +275,7 @@ types_of_blocks = {
   },
   "terms": {
     "exclusive": True,
-    "partners": ["question"]
+    "partners": ["question", "template"]
   },
   "variable name": {},
   "default language": {},
@@ -265,6 +293,13 @@ types_of_blocks = {
   "question": {
     "exclusive": True,
     "partners": ["auto terms", "terms", "attachment", "attachments"],
+  },
+  "response": {
+    "exclusive": True,
+    "allowed_attrs": [
+      "event",
+      "mandatory",
+    ]
   },
   "code": {},
   "comment": {
@@ -338,6 +373,7 @@ class YAMLError:
     return f"At {self.file_name}:{self.line_number}: {self.err_str}"
 
 class SafeLineLoader(SafeLoader):
+  """https://stackoverflow.com/questions/13319067/parsing-yaml-return-with-line-number"""
   def construct_mapping(self, node, deep=False):
     mapping = super(SafeLineLoader, self).construct_mapping(node, deep=deep)
     mapping['__line__'] = node.start_mark.line + 1
@@ -382,7 +418,7 @@ def find_errors(input_file):
       else:
         all_errors.append(YAMLError(err_str=f"Too many types this block could be: {posb_types}",
           line_number=line_number, file_name=input_file))
-    weird_keys = [attr for attr in doc.keys() if attr != "__line__" and attr not in all_dict_keys]
+    weird_keys = [attr for attr in doc.keys() if attr != "__line__" and attr.lower() not in all_dict_keys]
     if len(weird_keys) > 0:
       all_errors.append(YAMLError(err_str=f"Keys that shouldn't exist! {weird_keys}",
           line_number=line_number, file_name=input_file, experimental=False))
