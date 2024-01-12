@@ -64,7 +64,10 @@ class DAPythonVar:
   """Things that need to be defined as a docassemble var, i.e. abc or x.y['a']"""
   def __init__(self, x):
     self.errors = []
-    pass
+    if not isinstance(x, str):
+      self.errors = [(f"The python var needs to be a YAML string, is {x}", 1)]
+    elif " " in x:
+      self.errors = [(f"The python var cannot have whitespace (is {x})", 1)]
 
 class DAType:
   """Needs to be able to be a python defined types that's found at runtime in an interview, i.e. DAObject, Individual"""
@@ -76,11 +79,19 @@ class DAType:
 class ObjectsAttrType:
   def __init__(self, x):
     # The full typing desc of the var: TODO: how to use this?
-    # Needs to be python 3.10
     self.errors = []
-    if False: # not isinstance(x, Union[List[Dict[DAPythonVar, DAType]], Dict[DAPythonVar, DAType]]):
-      self.errors = [(f"Not objectAttrType isinstance! {x}", 1)]
+    if not (isinstance(x, list) or isinstance(x, dict)):
+      self.errors = [f"Objects block needs to be a list or a dict, is {x}"]
+    # for entry in x:
+    #   ...
+    #if not isinstance(x, Union[list[dict[DAPythonVar, DAType]], dict[DAPythonVar, DAType]]):
+    #  self.errors = [(f"Not objectAttrType isinstance! {x}", 1)]
 
+class DAFields:
+  def __init__(self, x):
+    self.errors = []
+    if not isinstance(x, list):
+      self.errors = [(f"fields should be a list, is {x}", 1)]
 
 # type notes what the value for that dictionary key is,
 
@@ -121,7 +132,9 @@ big_dict = {
   "help": {},
   "fields": {},
   "buttons": {},
-  "field": {},
+  "field": {
+    "type": DAPythonVar
+  },
   "template": {},
   "content": {},
   "reconsider": {},
