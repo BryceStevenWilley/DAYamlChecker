@@ -17,6 +17,9 @@ from mako.exceptions import SyntaxException, CompileException
 # * if "# use jinja" at top, process whole file with Jinja:
 #   https://docassemble.org/docs/interviews.html#jinja2
 
+# Ensure that if there's a space in the str, it's between quotes.
+space_in_str = re.compile("^[^ ]*['\"].* .*['\"][^ ]*$")
+
 
 class YAMLStr:
   """Should be a direct YAML string, not a list or dict"""
@@ -60,13 +63,15 @@ class JavascriptText:
     pass
 
 class DAPythonVar:
-  """Things that need to be defined as a docassemble var, i.e. abc or x.y['a']"""
-  def __init__(self, x):
-    self.errors = []
-    if not isinstance(x, str):
-      self.errors = [(f"The python var needs to be a YAML string, is {x}", 1)]
-    elif " " in x:
-      self.errors = [(f"The python var cannot have whitespace (is {x})", 1)]
+    """Things that need to be defined as a docassemble var, i.e. abc or x.y['a']"""
+
+    def __init__(self, x):
+        self.errors = []
+        if not isinstance(x, str):
+            self.errors = [(f"The python var needs to be a YAML string, is {x}", 1)]
+        elif " " in x and not space_in_str.search(x):
+            self.errors = [(f"The python var cannot have whitespace (is {x})", 1)]
+
 
 class DAType:
   """Needs to be able to be a python defined types that's found at runtime in an interview, i.e. DAObject, Individual"""
