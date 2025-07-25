@@ -442,8 +442,7 @@ def find_errors(input_file):
     line_number += lines_in_code
   return all_errors
 
-def main():
-  input_file = sys.argv[1]
+def process_file(input_file):
   for dumb_da_file in ["pgcodecache.yml", "title_documentation.yml", "documentation.yml", "docstring.yml", "example-list.yml"]:
     if input_file.endswith(dumb_da_file):
       print()
@@ -459,7 +458,10 @@ def main():
   print(f"Found {len(all_errors)} errors:")
   for err in all_errors:
     print(f"{err}")
-    
+
+def main():
+  for input_file in sys.argv[1:]:
+    process_file(input_file)
       
     
 if __name__ == "__main__":
