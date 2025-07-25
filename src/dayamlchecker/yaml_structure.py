@@ -211,7 +211,7 @@ big_dict = {
 # Not all blocks are necessary: comment can be by itself, and attachment can be with question, or alone
 
 # ordered by priority
-# TODO: brycew: consider making required_attrs, allowed_attrs
+# TODO: brycew: consider making required_attrs
 types_of_blocks = {
   "include": {
     "exclusive": True,
@@ -460,10 +460,9 @@ def process_file(input_file):
     print(f"{err}")
 
 def main():
-  for input_file in sys.argv[1:]:
-    process_file(input_file)
-      
-    
-if __name__ == "__main__":
-  main()
+    for input_file in sys.argv[1:]:
+        process_file(input_file)
 
+
+if __name__ == "__main__":
+    main()
