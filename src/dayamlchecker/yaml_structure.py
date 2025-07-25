@@ -1,5 +1,4 @@
 # Each doc, apply this to each block
-from typing import List, Dict, Union
 import re
 import sys
 import yaml
