@@ -1,0 +1,16 @@
+[project]
+name = "dayamlstructure"
+version = "0.1.0"
+description = "An LSP for Docassemble YAML interviews"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+authors = [
+  { name="Bryce Willey", email="bryce.steven.willey@gmail.com" },
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
